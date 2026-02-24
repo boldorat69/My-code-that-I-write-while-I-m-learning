@@ -1,4 +1,4 @@
-#№5 Абстракция
+# №5 Абстракция
 
 """
 Завдання: Реалізація системи оплати для різних способів платежів
@@ -28,7 +28,8 @@
 get_payment_details(), щоб продемонструвати роботу поліморфізму та абстракції.
 """
 
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
+
 
 class PaymentMethod(ABC):
     @abstractmethod
@@ -51,6 +52,7 @@ class CreditCardPayment(PaymentMethod):
     def get_payment_details(self):
         return f"Карта **** **** **** {self.card_number[-4:]}"
 
+
 class PayPalPayment(PaymentMethod):
     def __init__(self, email):
         self.email = email
@@ -61,6 +63,7 @@ class PayPalPayment(PaymentMethod):
     def get_payment_details(self):
         return f"PayPal: {self.email}"
 
+
 class CryptoPayment(PaymentMethod):
     def __init__(self, wallet_address):
         self.wallet_address = wallet_address
@@ -70,6 +73,7 @@ class CryptoPayment(PaymentMethod):
 
     def get_payment_details(self):
         return f"Гаманець: {self.wallet_address}"
+
 
 credit_pay = CreditCardPayment("1234 5678 8765 4321", "Valera")
 paypal_pay = PayPalPayment("boldorat@ukr.net")
@@ -88,6 +92,8 @@ print("-" * 30)
 calculate_total(). Створіть підкласи FoodOrder та DrinkOrder, які мають власний набір продуктів і
 реалізують метод для підрахунку загальної суми замовлення.
 """
+from abc import ABC, abstractmethod
+
 
 class Order(ABC):
     def __init__(self, table_number):
@@ -97,28 +103,44 @@ class Order(ABC):
     def calculate_total(self):
         pass
 
+
 class FoodOrder(Order):
     def __init__(self, table_number, products):
         super().__init__(table_number)
-        self.products = products
+        self.products = products  # теперь это словарь {название: цена}
 
     def calculate_total(self):
-        return len(self.products)
+        return sum(self.products.values())
+
 
 class DrinkOrder(Order):
     def __init__(self, table_number, drinks):
         super().__init__(table_number)
-        self.drinks = drinks
+        self.drinks = drinks  # словарь {название: цена}
 
     def calculate_total(self):
-        return len(self.drinks)
+        return sum(self.drinks.values())
 
-food_order = FoodOrder(1, ["Салат", "М'ясо", "Риба", "Закуски"])
-drink_order = DrinkOrder(5,["Пиво", "Сік", "Вода мінеральна", "Вода негазована", "Чай"])
+
+food_order = FoodOrder(1, {
+    "Салат": 120,
+    "М'ясо": 250,
+    "Риба": 300,
+    "Закуски": 150
+})
+
+drink_order = DrinkOrder(5, {
+    "Пиво": 80,
+    "Сік": 60,
+    "Вода мінеральна": 40,
+    "Вода негазована": 35,
+    "Чай": 50
+})
 
 orders = [food_order, drink_order]
+
 for order in orders:
-    print(f"Стіл № {order.table_number}, кількість позицій: {order.calculate_total()}")
+    print(f"Стіл № {order.table_number}, сума: {order.calculate_total()} грн")
 
 print("-" * 30)
 """
@@ -127,6 +149,7 @@ print("-" * 30)
 підкласи LocalStorage (збереження у файл) та CloudStorage (імітація збереження в хмару) з
 відповідною логікою.
 """
+
 
 class StorageInterface(ABC):
     def __init__(self, filename):
@@ -140,6 +163,7 @@ class StorageInterface(ABC):
     def load(self):
         pass
 
+
 class LocalStorage(StorageInterface):
     def __init__(self, filename):
         super().__init__(filename)
@@ -149,6 +173,7 @@ class LocalStorage(StorageInterface):
 
     def load(self):
         return f"Файл {self.filename} завантажено з локальної папки"
+
 
 class CloudStorage(StorageInterface):
     def __init__(self, filename):
@@ -160,6 +185,7 @@ class CloudStorage(StorageInterface):
     def load(self):
         return f"Файл {self.filename} завантажено з хмару"
 
+
 local_storage = LocalStorage("address.doc")
 cloud_storage = CloudStorage("settings.xml")
 
@@ -170,7 +196,6 @@ for save in saves:
 
 print("-" * 30)
 
-
 """
 Завдання 3: Реалізація транспортної системи
 Створіть абстрактний клас Transport, який має атрибути speed та capacity і метод move().
@@ -178,43 +203,46 @@ print("-" * 30)
 транспорту.
 """
 
-class Transport(ABC):
-    def __init__(self, speed, capacity):
-        self.speed = speed
-        self.capacity = capacity
+
+class StorageInterface(ABC):
+    def __init__(self, filename):
+        self.filename = filename
 
     @abstractmethod
-    def move(self):
+    def save(self, data: str):
         pass
 
-class Car(Transport):
-    def __init__(self, speed, capacity):
-        super().__init__(speed, capacity)
+    @abstractmethod
+    def load(self):
+        pass
 
-    def move(self):
-        return f"Автомобіль вмістимістю {self.capacity} людей рухається з швидкістю {self.speed} км/год"
 
-class Bike(Transport):
-    def __init__(self, speed, capacity):
-        super().__init__(speed, capacity)
+class LocalStorage(StorageInterface):
 
-    def move(self):
-        return f"Мотоцикл вмістимістю {self.capacity} людей рухається з швидкістю {self.speed} км/год"
+    def save(self, data: str):
+        return f"Файл {self.filename} збережено у локальній папці. Дані: {data}"
 
-class Bus(Transport):
-    def __init__(self, speed, capacity):
-        super().__init__(speed, capacity)
+    def load(self):
+        return f"Файл {self.filename} завантажено з локальної папки"
 
-    def move(self):
-        return f"Автобус вмістимістю {self.capacity} людей рухається з швидкістю {self.speed} км/год"
 
-car = Car(90, 5)
-bike = Bike(20,2)
-bus = Bus(50,30)
+class CloudStorage(StorageInterface):
 
-transports = [car, bike, bus]
-for transport in transports:
-    print(transport.move())
+    def save(self, data: str):
+        return f"Файл {self.filename} збережено у хмарі. Дані: {data}"
+
+    def load(self):
+        return f"Файл {self.filename} завантажено з хмари"
+
+
+local_storage = LocalStorage("address.doc")
+cloud_storage = CloudStorage("settings.xml")
+
+saves = [local_storage, cloud_storage]
+
+for storage in saves:
+    print(storage.save("Some data"))
+    print(storage.load())
 
 print("-" * 30)
 
@@ -224,26 +252,32 @@ print("-" * 30)
 LaserPrinter та InkjetPrinter, які реалізують цей метод відповідно до свого типу принтера
 """
 
+
 class Printable(ABC):
     @abstractmethod
     def print_document(self, content: str):
         pass
 
+
 class LaserPrinter(Printable):
     def __init__(self, name):
         self.name = name
+
     def print_document(self, content: str):
         return f"Документ {content} роздруковано на лазерному принтері {self.name}"
+
 
 class InkjetPrinter(Printable):
     def __init__(self, name):
         self.name = name
+
     def print_document(self, content: str):
         return f"Документ {content} роздруковано на струйному принтері {self.name}"
+
 
 laser_print = LaserPrinter("110 кабінет")
 inkjet_print = InkjetPrinter("210 кабінет")
 
-printers = [laser_print,inkjet_print]
+printers = [laser_print, inkjet_print]
 for printed in printers:
     print(printed.print_document("Якась таблиця"))
